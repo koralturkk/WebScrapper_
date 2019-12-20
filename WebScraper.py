@@ -2,6 +2,8 @@
 import requests, pprint
 from bs4 import BeautifulSoup
 
+from Website import Website
+
 static_URLs = {"monster": "https://www.monster.com/jobs/search/?q=Software-Developer&where=Australia",
                "pythonjobs": "http://pythonjobs.github.io/",
                "indeed": "https://au.indeed.com/jobs?q=software+engineer&l=Australia"
@@ -18,65 +20,47 @@ static_URLs = {"monster": "https://www.monster.com/jobs/search/?q=Software-Devel
 
 
 
+monster_website = Website(URL="https://www.monster.com/jobs/search/?q=Software-Developer&where=Australia",
+                          name="Monster", id="ResultsContainer",tag_list="section", result_class="card-content",
+                          tag_title="h2", tag_company="div", tag_location="div", title_class="title", company_class="company",
+                          location_class="location",title_index=0, location_index=0,company_index=0)
 
-def listJobs(URL_dict, job_title = None, location= None):
+pythonjobs_website = Website(URL="http://pythonjobs.github.io/",
+                          name="Pythonjobs", id="content",tag_list="div", result_class="job",
+                          tag_title="h1", tag_company="span", tag_location="span", title_class=None, company_class="info",
+                          location_class="info",title_index=0, location_index=0,company_index=3)
 
-    for name, URL in URL_dict.items():
+indeed_website = Website(URL="https://au.indeed.com/jobs?q=software+engineer&l=Australia",
+                          name="Indeed", id="resultsCol",tag_list="div", result_class="jobsearch-SerpJobCard",
+                          tag_title="div", tag_company="span", tag_location="span", title_class="title", company_class="company",
+                          location_class="location accessible-contrast-color-location",title_index=0, location_index=0,company_index=0)
 
-        print("\n","--------Jobs Listings for {name}--------".format(name=name),"\n")
-        page = requests.get(URL)
+websites = [monster_website,pythonjobs_website,indeed_website]
+
+
+def listJobs(Websites: [], job_title = None, location= None):
+
+    for website in Websites:
+        page = requests.get(website.URL)
         soup = BeautifulSoup(page.content, "html.parser")
 
-        if name == "monster":
-            id = "ResultsContainer"
-            tag_list = "section"
-            result_class = "card-content"
+        if website is not None:
+            print("\n", "--------Jobs Listings for {name}--------".format(name=website.name), "\n")
 
-            tag_title = "h2"
-            tag_company = "div"
-            tag_location = "div"
-            title_class = "title"
-            company_class = "company"
-            location_class = "location"
+            id = website.id
+            tag_list = website.tag_list
+            result_class = website.result_class
 
-            title_index= 0
-            location_index = 0
-            company_index = 0
+            tag_title = website.tag_title
+            tag_company = website.tag_company
+            tag_location = website.tag_location
+            title_class = website.title_class
+            company_class = website.company_class
+            location_class = website.location_class
 
-        elif name == "pythonjobs":
-            id ="content"
-            tag_list = "div"
-            result_class = "job"
-
-            tag_title = "h1"
-            tag_company = "span"
-            tag_location = "span"
-            title_class = None
-            company_class = "info"
-            location_class = "info"
-
-            title_index= 0
-            location_index = 0
-            company_index = 3
-
-        elif name == "indeed":
-            id = "resultsCol"
-
-            tag_list = "div"
-            result_class = "jobsearch-SerpJobCard"
-
-            tag_title = "div"
-            title_class = "title"
-
-            tag_company = "span"
-            company_class = "company"
-
-            tag_location = "span"
-            location_class = "location accessible-contrast-color-location"
-
-            title_index = 0
-            location_index = 0
-            company_index = 0
+            title_index= website.title_index
+            location_index = website.location_index
+            company_index = website.company_index
 
         else:
             continue
@@ -139,4 +123,7 @@ def linksForKeyword(URL_dict, search: str):
 
     print("--------End of Search--------")
 
-listJobs(static_URLs)
+
+
+
+listJobs(websites)
