@@ -4,12 +4,6 @@ from bs4 import BeautifulSoup
 
 from Website import Website
 
-static_URLs = {"monster": "https://www.monster.com/jobs/search/?q=Software-Developer&where=Australia",
-               "pythonjobs": "http://pythonjobs.github.io/",
-               "indeed": "https://au.indeed.com/jobs?q=software+engineer&l=Australia"
-               }
-
-
 ### Things to do
 ###-----------------
 ### Make it applicable to static websites (Done!)
@@ -22,25 +16,26 @@ static_URLs = {"monster": "https://www.monster.com/jobs/search/?q=Software-Devel
 
 monster_website = Website(URL="https://www.monster.com/jobs/search/?q=Software-Developer&where=Australia",
                           name="Monster", id="ResultsContainer",tag_list="section", result_class="card-content",
-                          tag_title="h2", tag_company="div", tag_location="div", title_class="title", company_class="company",
+                          tag_title="h2", tag_company="div", tag_location="div", title_class="title", company_class="company", tag_link="a",href="href",
                           location_class="location",title_index=0, location_index=0,company_index=0)
 
 pythonjobs_website = Website(URL="http://pythonjobs.github.io/",
                           name="Pythonjobs", id="content",tag_list="div", result_class="job",
-                          tag_title="h1", tag_company="span", tag_location="span", title_class=None, company_class="info",
+                          tag_title="h1", tag_company="span", tag_location="span", title_class=None, company_class="info", tag_link="a", href="href",
                           location_class="info",title_index=0, location_index=0,company_index=3)
 
 indeed_website = Website(URL="https://au.indeed.com/jobs?q=software+engineer&l=Australia",
                           name="Indeed", id="resultsCol",tag_list="div", result_class="jobsearch-SerpJobCard",
-                          tag_title="div", tag_company="span", tag_location="span", title_class="title", company_class="company",
+                          tag_title="div", tag_company="span", tag_location="span", title_class="title", company_class="company", tag_link="a",href="href",
                           location_class="location accessible-contrast-color-location",title_index=0, location_index=0,company_index=0)
 
-websites = [monster_website,pythonjobs_website,indeed_website]
+website_list = [monster_website,pythonjobs_website,indeed_website]
 
 
-def listJobs(Websites: [], job_title = None, location= None):
 
-    for website in Websites:
+def listJobs(website_list, job_title = None, location= None):
+
+    for website in website_list:
         page = requests.get(website.URL)
         soup = BeautifulSoup(page.content, "html.parser")
 
@@ -91,34 +86,41 @@ def listJobs(Websites: [], job_title = None, location= None):
             print("")
 
 
-def linksForKeyword(URL_dict, search: str):
+def linksForKeyword(website_list, search: str):
 
     if type(search) is not str:
         raise TypeError("You should input a string of text argument")
 
-    for name, URL in URL_dict.items():
+    for website in website_list:
 
-        page = requests.get(URL)
+        page = requests.get(website.URL)
         soup = BeautifulSoup(page.content, "html.parser")
 
-        if name == "monster":
-            print("\n", "--------Links for {name}--------".format(name=name), "\n")
-            id = "ResultsContainer"
-            h = "h2"
-            element = "a"
-            attribute = "href"
+        if website is not None:
 
+            print("\n", "--------Links for {name}--------".format(name=website.name), "\n")
+
+            id = website.id
+            tag_title = website.tag_title
+            tag_link = website.tag_link
+            href = website.href
         else:
             continue
 
         results = soup.find(id=id)
 
-        python_jobs = results.find_all(h, string=lambda text: search in text.lower())
+        jobs = results.find_all(tag_title, string=lambda text: search in text.lower() if text is not None else "")
 
-        for p_job in python_jobs:
-            link = p_job.find(element)[attribute]
+        for p_job in jobs:
+            link = p_job.find(tag_link)[href]
             print(p_job.text.strip())
-            print("Apply here: {}\n".format(link))
+
+            if website.name == "Pythonjobs":
+                print("Apply here: http://pythonjobs.github.io{}\n".format(link))
+            elif website.name == "Indeed":
+                print("Apply here: https://au.indeed.com/{}\n".format(link))
+            else:
+                print("Apply here: {}\n".format(link))
 
 
     print("--------End of Search--------")
@@ -126,4 +128,6 @@ def linksForKeyword(URL_dict, search: str):
 
 
 
-listJobs(websites)
+listJobs(website_list)
+
+linksForKeyword(website_list, "developer")
