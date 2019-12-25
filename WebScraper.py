@@ -7,9 +7,6 @@ from Website import Website
 ### Things to do
 ###-----------------
 ### Make it applicable to static websites (Done!)
-### Customize search query
-### Make it applicable to dynamic websites
-### Make it applicable to hidden websites
 ### Build commandline app
 
 
